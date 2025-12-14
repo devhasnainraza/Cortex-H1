@@ -21,11 +21,11 @@ description: "Task list for Physical AI & Humanoid Robotics Textbook implementat
 
 **Purpose**: Project initialization and basic structure
 
-- [x] T001 Initialize Docusaurus 3.x project with TypeScript in root directory
-- [x] T002 [P] Install dependencies: `better-auth`, `openai-chatkit`, `@langchain/core`, `@qdrant/js-client-rest`, `openai`
-- [x] T003 [P] Configure Tailwind CSS in `docusaurus.config.ts` and `src/css/custom.css`
-- [x] T004 [P] Setup PostgreSQL database and Qdrant instance (Docker/Cloud) (Created docker-compose.yml)
-- [x] T005 [P] Create `.env.local` with keys for Better Auth, OpenAI, Gemini, Postgres, Qdrant
+- [ ] T001 Initialize Docusaurus 3.x project with TypeScript in root directory
+- [ ] T002 [P] Install dependencies: `better-auth`, `openai-chatkit`, `@langchain/core`, `@qdrant/js-client-rest`, `openai`
+- [ ] T003 [P] Configure Tailwind CSS in `docusaurus.config.ts` and `src/css/custom.css`
+- [ ] T004 [P] Setup PostgreSQL database and Qdrant instance (Docker/Cloud) (Created docker-compose.yml)
+- [ ] T005 [P] Create `.env.local` with keys for Better Auth, OpenAI, Gemini, Postgres, Qdrant
 
 ---
 
@@ -35,10 +35,10 @@ description: "Task list for Physical AI & Humanoid Robotics Textbook implementat
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [x] T006 Configure Better Auth with PostgreSQL adapter in `api/auth/[...auth].ts` (or equivalent Docusaurus API route)
-- [x] T007 [P] Create `HardwareProfile` enum and extend User schema in `api/auth/schema.ts` (if applicable) or database migration
-- [x] T008 [P] Setup API route handler structure in `api/` to support custom endpoints (Chat, Translation)
-- [x] T009 [P] Create Qdrant collection `textbook_knowledge` using setup script or curl (Created scripts/setup_qdrant.js)
+- [ ] T006 Configure Better Auth with PostgreSQL adapter in `api/auth/[...auth].ts` (or equivalent Docusaurus API route)
+- [ ] T007 [P] Create `HardwareProfile` enum and extend User schema in `api/auth/schema.ts` (if applicable) or database migration
+- [ ] T008 [P] Setup API route handler structure in `api/` to support custom endpoints (Chat, Translation)
+- [ ] T009 [P] Create Qdrant collection `textbook_knowledge` using setup script or curl (Created scripts/setup_qdrant.js)
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -52,10 +52,10 @@ description: "Task list for Physical AI & Humanoid Robotics Textbook implementat
 
 ### Implementation for User Story 1
 
-- [x] T010 [US1] Create folder structure for `docs/module-1-ros2`, `docs/module-2-digital-twin`, `docs/module-3-ai-brain`, `docs/module-4-vla`
-- [x] T011 [P] [US1] Create content placeholder `docs/module-1-ros2/lab-urdf.md`
-- [x] T012 [P] [US1] Configure sidebars in `sidebars.ts` to explicitly list the 4 modules and their hierarchy
-- [x] T013 [US1] Verify Docusaurus build renders the sidebar correctly
+- [ ] T010 [US1] Create folder structure for `docs/module-1-ros2`, `docs/module-2-digital-twin`, `docs/module-3-ai-brain`, `docs/module-4-vla`
+- [ ] T011 [P] [US1] Create content placeholder `docs/module-1-ros2/lab-urdf.md`
+- [ ] T012 [P] [US1] Configure sidebars in `sidebars.ts` to explicitly list the 4 modules and their hierarchy
+- [ ] T013 [US1] Verify Docusaurus build renders the sidebar correctly
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 
@@ -69,10 +69,10 @@ description: "Task list for Physical AI & Humanoid Robotics Textbook implementat
 
 ### Implementation for User Story 2
 
-- [x] T014 [US2] Create Custom Signup Form component in `src/components/Auth/SignupForm.tsx` with `hardware_profile` selector
-- [x] T015 [US2] Update Auth Provider to expose `user.hardware_profile` to client-side context
-- [x] T016 [US2] Create `HardwareOnly` component in `src/components/HardwareOnly/index.tsx` that checks auth context
-- [x] T017 [US2] Add test page `docs/test-hardware.md` using `<HardwareOnly profile="Unitree_Go2">` to verify behavior
+- [ ] T014 [US2] Create Custom Signup Form component in `src/components/Auth/SignupForm.tsx` with `hardware_profile` selector
+- [ ] T015 [US2] Update Auth Provider to expose `user.hardware_profile` to client-side context
+- [ ] T016 [US2] Create `HardwareOnly` component in `src/components/HardwareOnly/index.tsx` that checks auth context
+- [ ] T017 [US2] Add test page `docs/test-hardware.md` using `<HardwareOnly profile="Unitree_Go2">` to verify behavior
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 
@@ -86,11 +86,11 @@ description: "Task list for Physical AI & Humanoid Robotics Textbook implementat
 
 ### Implementation for User Story 3
 
-- [x] T018 [P] [US3] Create Python ingestion script `scripts/rag_ingest.py` to parse MD files and upsert to Qdrant
-- [x] T019 [US3] Implement RAG API endpoint `api/chat/route.ts` using ChatKit/LangChain to query Qdrant
-- [x] T020 [P] [US3] Create `ChatWidget` component in `src/components/ChatWidget/index.tsx` using ChatKit UI
-- [x] T021 [US3] Implement global `mouseup` listener in `src/theme/Layout/index.tsx` (swizzle Layout) to detect selection
-- [x] T022 [US3] Connect selection event to `ChatWidget` state to pre-fill input box
+- [ ] T018 [P] [US3] Create Python ingestion script `scripts/rag_ingest.py` to parse MD files and upsert to Qdrant
+- [ ] T019 [US3] Implement RAG API endpoint `api/chat/route.ts` using ChatKit/LangChain to query Qdrant
+- [ ] T020 [P] [US3] Create `ChatWidget` component in `src/components/ChatWidget/index.tsx` using ChatKit UI
+- [ ] T021 [US3] Implement global `mouseup` listener in `src/theme/Layout/index.tsx` (swizzle Layout) to detect selection
+- [ ] T022 [US3] Connect selection event to `ChatWidget` state to pre-fill input box
 
 **Checkpoint**: All user stories should now be independently functional
 
@@ -104,10 +104,10 @@ description: "Task list for Physical AI & Humanoid Robotics Textbook implementat
 
 ### Implementation for User Story 4
 
-- [x] T023 [P] [US4] Implement Translation API endpoint `api/translate/route.ts` using Gemini 2.0 Flash SDK
-- [x] T024 [P] [US4] Create `Translator` button component in `src/components/Translator/index.tsx`
-- [x] T025 [US4] Implement client-side logic to replace DOM text nodes with translated content (preserving `<pre>/<code>`)
-- [x] T026 [US4] Verify code block preservation on a page with Python snippets
+- [ ] T023 [P] [US4] Implement Translation API endpoint `api/translate/route.ts` using Gemini 2.0 Flash SDK
+- [ ] T024 [P] [US4] Create `Translator` button component in `src/components/Translator/index.tsx`
+- [ ] T025 [US4] Implement client-side logic to replace DOM text nodes with translated content (preserving `<pre>/<code>`)
+- [ ] T026 [US4] Verify code block preservation on a page with Python snippets
 
 ---
 
@@ -115,9 +115,9 @@ description: "Task list for Physical AI & Humanoid Robotics Textbook implementat
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [x] T027 [P] Clean up temporary test pages
-- [x] T028 Update `README.md` with setup instructions
-- [x] T029 Perform full regression test of all 4 modules and profiles
+- [ ] T027 [P] Clean up temporary test pages
+- [ ] T028 Update `README.md` with setup instructions
+- [ ] T029 Perform full regression test of all 4 modules and profiles
 
 ---
 
