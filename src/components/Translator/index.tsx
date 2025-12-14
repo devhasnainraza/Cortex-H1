@@ -1,88 +1,342 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
+
+// --- Premium Glass Modal Component for API Key ---
+const ApiKeyModal = ({ isOpen, onSubmit, onClose }: { isOpen: boolean, onSubmit: (key: string) => void, onClose: () => void }) => {
+  const [inputKey, setInputKey] = useState('');
+  
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-md animate-fade-in transition-all duration-300">
+      <div className="relative bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-white/20 dark:border-gray-700 p-8 rounded-3xl shadow-2xl max-w-md w-full mx-4 transform transition-all scale-100 hover:shadow-blue-500/10 ring-1 ring-black/5">
+        
+        {/* Close Button */}
+        <button onClick={onClose} className="absolute top-4 right-4 p-2 rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+
+        {/* Hero Icon */}
+        <div className="flex justify-center mb-6">
+            <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center text-3xl shadow-inner text-blue-600 dark:text-blue-400">
+                🔑
+            </div>
+        </div>
+
+        <h3 className="text-2xl font-extrabold mb-2 text-center text-gray-900 dark:text-white tracking-tight">
+          Unlock Translation
+        </h3>
+        <p className="text-sm text-center text-gray-500 dark:text-gray-400 mb-6 px-4">
+          Enter your free <b>Google Gemini API Key</b> to enable real-time AI translation for this book.
+        </p>
+
+        <div className="space-y-4">
+            <div className="relative group">
+                <input 
+                  type="password" 
+                  value={inputKey}
+                  onChange={(e) => setInputKey(e.target.value)}
+                  placeholder="Paste API Key (starts with AIza...)"
+                  className="w-full p-4 bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-mono text-sm shadow-inner group-hover:bg-white dark:group-hover:bg-gray-900"
+                />
+            </div>
+
+            <button 
+                onClick={() => { if(inputKey) onSubmit(inputKey); }}
+                disabled={!inputKey}
+                className="w-full py-3.5 bg-gradient-to-r from-blue-600 to-violet-600 hover:from-blue-700 hover:to-violet-700 text-white rounded-xl text-sm font-bold shadow-lg shadow-blue-500/25 disabled:opacity-50 disabled:shadow-none transition-all transform active:scale-[0.98]"
+            >
+                Start Translating
+            </button>
+        </div>
+
+        <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800 text-center">
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-semibold text-blue-500 hover:text-blue-600 transition-colors">
+            Get a free key from Google AI Studio
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default function Translator() {
   const [loading, setLoading] = useState(false);
+  const [currentLang, setCurrentLang] = useState('en');
+  const [originalContent, setOriginalContent] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const [showKeyModal, setShowKeyModal] = useState(false);
+  const [pendingLang, setPendingLang] = useState<'ur'|null>(null);
+  const [navbarContainer, setNavbarContainer] = useState<Element | null>(null);
 
-  const translatePage = async (lang: 'ur' | 'hi') => {
+  // 1. Initialize: Find Navbar & Save Content
+  useEffect(() => {
+    // Find Docusaurus Navbar Right Container
+    const navRight = document.querySelector('.navbar__items--right');
+    if (navRight) {
+        setNavbarContainer(navRight);
+    }
+
+    const contentDiv = document.querySelector('.theme-doc-markdown');
+    if (contentDiv && !originalContent) {
+      setOriginalContent(contentDiv.innerHTML);
+    }
+  }, []); 
+
+  // Premium Visual Loading Effect
+  useEffect(() => {
+    const contentDiv = document.querySelector('.theme-doc-markdown') as HTMLElement;
+    if (contentDiv) {
+      if (loading) {
+        // 1. Dim the original content
+        contentDiv.classList.add('opacity-30', 'pointer-events-none', 'filter', 'blur-[2px]', 'transition-all', 'duration-500');
+        
+        // 2. Inject Premium Overlay
+        const overlay = document.createElement('div');
+        overlay.id = 'translator-loading-overlay';
+        // Use FIXED positioning so it stays on screen while scrolling
+        overlay.className = 'fixed inset-0 z-[100] flex flex-col items-center justify-center pointer-events-none';
+        
+        overlay.innerHTML = `
+            <div class="relative p-1 rounded-2xl bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-gradient-xy p-[2px] shadow-2xl pointer-events-auto">
+                <div class="bg-white dark:bg-gray-900 rounded-xl p-6 flex flex-col items-center gap-4 min-w-[200px]">
+                    
+                    <!-- Animated AI Brain Icon -->
+                    <div class="relative w-12 h-12">
+                        <div class="absolute inset-0 bg-blue-500 rounded-full opacity-20 animate-ping"></div>
+                        <div class="relative z-10 w-12 h-12 bg-gradient-to-br from-blue-600 to-violet-600 rounded-full flex items-center justify-center text-white shadow-lg">
+                            <svg class="w-6 h-6 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Text & Progress -->
+                    <div class="text-center">
+                        <h3 class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-violet-600">Translating...</h3>
+                        <p class="text-xs text-gray-400 mt-1">Generating ${currentLang === 'en' ? 'Urdu' : 'Hindi'} Content</p>
+                    </div>
+
+                    <!-- Fake Progress Bar -->
+                    <div class="w-full h-1 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                        <div class="h-full bg-blue-500 animate-progress-indeterminate"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        if (getComputedStyle(contentDiv).position === 'static') {
+            contentDiv.style.position = 'relative';
+        }
+        contentDiv.appendChild(overlay);
+
+      } else {
+        // Cleanup
+        contentDiv.classList.remove('opacity-30', 'pointer-events-none', 'filter', 'blur-[2px]');
+        const overlay = document.getElementById('translator-loading-overlay');
+        if (overlay) {
+            overlay.classList.add('opacity-0', 'scale-95', 'transition-all', 'duration-300');
+            setTimeout(() => overlay.remove(), 300);
+        }
+        contentDiv.style.position = ''; 
+      }
+    }
+  }, [loading]);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleKeySubmit = (key: string) => {
+    localStorage.setItem('GEMINI_API_KEY', key);
+    setShowKeyModal(false);
+    if (pendingLang) {
+      translatePage(pendingLang);
+      setPendingLang(null);
+    }
+  };
+
+  const restoreEnglish = () => {
+    // FORCE RELOAD to ensure 100% clean state
+    window.location.reload();
+  };
+
+  const translatePage = async (lang: 'ur') => {
+    if (lang as any === 'en') {
+        restoreEnglish();
+        return;
+    }
+    
+    if (currentLang === lang) return;
+
+    let apiKey = localStorage.getItem('GEMINI_API_KEY');
+    if (!apiKey) {
+      setPendingLang(lang);
+      setShowKeyModal(true);
+      return;
+    }
+
     setLoading(true);
-    // Find the main content
     const contentDiv = document.querySelector('.theme-doc-markdown');
     if (!contentDiv) {
-      alert('Content not found');
       setLoading(false);
       return;
     }
 
-    // For a robust implementation, we'd fetch the source MDX. 
-    // Here we'll take innerText but that loses formatting.
-    // Better strategy: Clone the node, preserve structure, translate text nodes.
-    // BUT spec says "Server-Side Agent... translate Markdown content".
-    // Since we don't have the MD content easily, let's assume we send the text content 
-    // and replace it, OR ideally we would hook into Docusaurus data.
-    // Given constraints, I will implement a visual replacement of text nodes.
-    
-    // Simplification for prototype:
-    // We will send the innerHTML (risky but preserves structure) and ask Gemini to return translated HTML?
-    // The Prompt said "translate Markdown content". 
-    // Let's try to get the textContent and replace it? No, that kills structure.
-    
-    // Fallback Plan: Send InnerText, show in a modal? No, "replace DOM text nodes".
-    
-    // Let's try to iterate text nodes.
-    const walker = document.createTreeWalker(contentDiv, NodeFilter.SHOW_TEXT);
-    const nodes: Node[] = [];
-    let node;
-    while(node = walker.nextNode()) {
-        if (node.nodeValue?.trim()) nodes.push(node);
+    const cacheKey = `trans_cache_${window.location.pathname}_${lang}`;
+    const cachedData = localStorage.getItem(cacheKey);
+
+    if (cachedData) {
+      setTimeout(() => {
+        contentDiv.innerHTML = cachedData;
+        setCurrentLang(lang);
+        setLoading(false);
+        showToast(`Loaded Urdu (Cached)`);
+      }, 300);
+      return;
     }
 
-    // This is very slow if we translate node by node.
-    // Let's try to grab the whole Markdown container innerText (simulated markdown) if we can.
-    
-    // Since this is a prototype/demo:
-    // We will just create a "Translated View" that might be text-heavy or use the API to return a string.
-    // But let's follow the "Translate Page" button instruction.
-    
-    // ACTUAL IMPLEMENTATION: 
-    // We will assume the API accepts HTML content if we send HTML, or we send MD if available.
-    // Let's send the innerHTML and ask Gemini to translate the text inside tags.
-    
-    const html = contentDiv.innerHTML;
-    
     try {
-        const res = await fetch('/api/translate', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ content: html, targetLanguage: lang })
-        });
-        const data = await res.json();
-        if (data.translatedContent) {
-            contentDiv.innerHTML = data.translatedContent;
-        }
-    } catch (e) {
-        console.error(e);
-        alert('Translation failed');
+      const { GoogleGenerativeAI } = await import("@google/generative-ai");
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+      const langName = 'Urdu';
+      
+      const prompt = `You are a professional technical translator. 
+      Translate the following HTML content to ${langName}.
+      
+      CRITICAL RULES:
+      1. Return ONLY the inner HTML content. DO NOT wrap in <html>, <body>, or markdown code blocks.
+      2. DO NOT change any class names, ids, or structure.
+      3. DO NOT add dir="rtl" to the root div (it breaks the site layout).
+      4. DO NOT translate code blocks (<pre>, <code>).
+      
+      Content:
+      ${originalContent || contentDiv.innerHTML}`;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      let translatedText = response.text();
+
+      translatedText = translatedText.replace(/^```html/, '').replace(/```$/, '');
+
+      if (translatedText) {
+        contentDiv.innerHTML = translatedText;
+        setCurrentLang(lang);
+        localStorage.setItem(cacheKey, translatedText);
+        showToast(`Translated to ${langName}`);
+      }
+    } catch (e: any) {
+      console.error(e);
+      let msg = "Unknown Error";
+      if (e.message?.includes('403') || e.message?.includes('API_KEY_INVALID')) {
+          msg = "Invalid API Key. Please check permissions.";
+          localStorage.removeItem('GEMINI_API_KEY'); 
+      } else if (e.message?.includes('429')) {
+          msg = "Quota Exceeded. Please wait a moment.";
+      } else if (e.message?.includes('404')) {
+          msg = "Model Error. Please contact support.";
+      }
+      alert(`Translation Error: ${msg}`);
     }
     
     setLoading(false);
   };
 
-  return (
-    <div className="flex gap-2 mb-4">
-      <button 
-        disabled={loading}
-        onClick={() => translatePage('ur')}
-        className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-      >
-        {loading ? 'Translating...' : 'Translate to Urdu'}
-      </button>
-       <button 
-        disabled={loading}
-        onClick={() => translatePage('hi')}
-        className="px-3 py-1 bg-orange-600 text-white rounded hover:bg-orange-700 disabled:opacity-50"
-      >
-        {loading ? 'Translating...' : 'Translate to Hindi'}
-      </button>
-    </div>
-  );
+  // Premium Dropdown Style with Native Docusaurus Theme Integration
+  const TranslatorControls = () => {
+    const [isOpen, setIsOpen] = useState(false);
+
+    // Close dropdown on click outside
+    useEffect(() => {
+        const close = () => setIsOpen(false);
+        if (isOpen) window.addEventListener('click', close);
+        return () => window.removeEventListener('click', close);
+    }, [isOpen]);
+
+    return (
+        <div className="relative mx-2" onClick={(e) => e.stopPropagation()}>
+            <button 
+                onClick={() => setIsOpen(!isOpen)}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 border group
+                    ${isOpen 
+                        ? 'bg-[#25C2A0]/10 border-[#25C2A0] text-[#25C2A0]' 
+                        : 'bg-transparent border-transparent hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-[#25C2A0]'
+                    }`}
+            >
+                <span className="text-xl filter drop-shadow-sm group-hover:scale-110 transition-transform">🌐</span>
+                <span className="text-sm font-bold hidden sm:block">
+                    {currentLang === 'en' ? 'English' : 'Urdu'}
+                </span>
+                <svg className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180 text-[#25C2A0]' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+
+            {/* Dropdown Menu - Native Docusaurus Style */}
+            <div className={`absolute right-0 top-full mt-1 min-w-[150px] bg-[var(--ifm-dropdown-background-color)] rounded-[var(--ifm-global-radius)] shadow-[var(--ifm-dropdown-shadow)] border border-[var(--ifm-toc-border-color)] overflow-hidden transition-all duration-200 z-[100]
+                ${isOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}
+            `}>
+                <ul className="list-none m-0 p-0">
+                    <li>
+                        <button 
+                            onClick={() => { restoreEnglish(); setIsOpen(false); }}
+                            className={`w-full text-left flex items-center gap-3 px-4 py-2 text-sm font-medium transition-colors
+                                ${currentLang === 'en' 
+                                    ? 'text-[var(--ifm-dropdown-link-color-active)] bg-[var(--ifm-dropdown-hover-background-color)]' 
+                                    : 'text-[var(--ifm-dropdown-link-color)] hover:text-[var(--ifm-dropdown-link-color-active)] hover:bg-[var(--ifm-dropdown-hover-background-color)]'
+                                }
+                            `}
+                        >
+                            <span className="text-lg leading-none">🇺🇸</span>
+                            <span>English</span>
+                        </button>
+                    </li>
+
+                    <li>
+                        <button 
+                            disabled={loading}
+                            onClick={() => { translatePage('ur'); setIsOpen(false); }}
+                            className={`w-full text-left flex items-center gap-3 px-4 py-2 text-sm font-medium transition-colors
+                                ${currentLang === 'ur' 
+                                    ? 'text-[var(--ifm-dropdown-link-color-active)] bg-[var(--ifm-dropdown-hover-background-color)]' 
+                                    : 'text-[var(--ifm-dropdown-link-color)] hover:text-[var(--ifm-dropdown-link-color-active)] hover:bg-[var(--ifm-dropdown-hover-background-color)]'
+                                }
+                            `}
+                        >
+                            {loading && currentLang !== 'ur' ? (
+                                <div className="w-5 h-5 border-2 border-[var(--ifm-color-primary)] border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                                <span className="text-lg leading-none">🇵🇰</span>
+                            )}
+                            <span>Urdu</span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    );
+  };
+
+  // Use Portal to inject into Navbar if available
+  if (navbarContainer) {
+      return (
+        <>
+            {ReactDOM.createPortal(<TranslatorControls />, navbarContainer)}
+            <ApiKeyModal isOpen={showKeyModal} onSubmit={handleKeySubmit} onClose={() => setShowKeyModal(false)} />
+            {/* Toast remains floating */}
+            <div className={`fixed top-24 left-1/2 transform -translate-x-1/2 z-[300] transition-all duration-300 ${toast ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}`}>
+                <div className="bg-gray-900/95 backdrop-blur-md text-white px-6 py-2.5 rounded-full shadow-2xl flex items-center gap-3 border border-white/10 font-medium text-sm">
+                <span className="text-lg">✨</span>
+                <span>{toast}</span>
+                </div>
+            </div>
+        </>
+      );
+  }
+
+  // Fallback if Navbar not found (e.g. initial load)
+  return null;
 }

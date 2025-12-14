@@ -18,12 +18,12 @@ const config: Config = {
   url: 'https://devhasnainraza.github.io',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/Physical-AI-Humanoid-Robotics-Book/',
+  baseUrl: '/Cortex-H1/',
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: 'devhasnainraza', // Usually your GitHub org/user name.
-  projectName: 'Physical-AI-Humanoid-Robotics-Book', // Usually your repo name.
+  projectName: 'Cortex-H1', // Usually your repo name.
   deploymentBranch: 'gh-pages',
   trailingSlash: false,
 
@@ -80,67 +80,22 @@ const config: Config = {
       title: 'Cortex-H1',
       logo: {
         alt: 'Cortex-H1 Logo',
-        src: 'img/logo.svg',
+        src: 'img/cortex-logo.svg',
       },
       items: [
         {
           type: 'docSidebar',
           sidebarId: 'textbookSidebar',
           position: 'left',
-          label: 'Textbook',
+          label: 'Book',
         },
-        {to: '/blog', label: 'Blog', position: 'left'},
+        // {to: '/blog', label: 'Blog', position: 'left'},
         {
-          href: 'https://github.com/facebook/docusaurus',
+          href: 'https://github.com/devhasnainraza/Physical-AI-Humanoid-Robotics-Book',
           label: 'GitHub',
           position: 'right',
         },
       ],
-    },
-    footer: {
-      style: 'dark',
-      links: [
-        {
-          title: 'Docs',
-          items: [
-            {
-              label: 'Module 1: ROS 2',
-              to: '/docs/module-1-ros2/lab-urdf',
-            },
-          ],
-        },
-        {
-          title: 'Community',
-          items: [
-            {
-              label: 'Stack Overflow',
-              href: 'https://stackoverflow.com/questions/tagged/docusaurus',
-            },
-            {
-              label: 'Discord',
-              href: 'https://discordapp.com/invite/docusaurus',
-            },
-            {
-              label: 'X',
-              href: 'https://x.com/docusaurus',
-            },
-          ],
-        },
-        {
-          title: 'More',
-          items: [
-            {
-              label: 'Blog',
-              to: '/blog',
-            },
-            {
-              label: 'GitHub',
-              href: 'https://github.com/facebook/docusaurus',
-            },
-          ],
-        },
-      ],
-      copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
     },
     prism: {
       theme: prismThemes.github,
