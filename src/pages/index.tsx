@@ -53,7 +53,7 @@ function HomepageHeader() {
         <div className="mt-16 pt-8 border-t border-white/10 flex flex-wrap justify-center gap-8 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
             <span className="text-sm font-bold tracking-widest text-gray-500">POWERED BY</span>
             <img src="https://upload.wikimedia.org/wikipedia/commons/b/bb/Ros_logo.svg" className="h-8 w-auto invert" alt="ROS 2" />
-            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Nvidia_logo.svg" className="h-6 w-auto invert" alt="NVIDIA" />
+            <img src="https://upload.wikimedia.org/wikipedia/sco/thumb/2/21/Nvidia_logo.svg/960px-Nvidia_logo.svg.png?20150924223142" className="h-6 w-auto invert" alt="NVIDIA" />
             <img src="https://upload.wikimedia.org/wikipedia/commons/1/19/Unity_Technologies_logo.svg" className="h-8 w-auto invert" alt="Unity" />
             <img src="https://upload.wikimedia.org/wikipedia/commons/8/8a/Google_Gemini_logo.svg" className="h-8 w-auto invert" alt="Gemini" />
         </div>
