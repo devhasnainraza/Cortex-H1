@@ -1,8 +1,24 @@
 {
-  // This file is not used in compilation. It is here just for a nice editor experience.
-  "extends": "@docusaurus/tsconfig",
+  // This file provides editor support and typechecking without depending on node_modules being pre-built
   "compilerOptions": {
-    "baseUrl": "."
+    "baseUrl": ".",
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "jsx": "react-jsx",
+    "allowJs": true,
+    "noEmit": true,
+    "strict": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "paths": {
+      "@site/*": ["./*"],
+      "@theme/*": ["./src/theme/*"],
+      "@theme-original/*": ["./src/theme/*"]
+    }
   },
-  "exclude": [".docusaurus", "build"]
+  "include": ["src", "docs", "docusaurus.config.ts", "sidebars.ts"],
+  "exclude": [".docusaurus", "build", "node_modules"]
 }

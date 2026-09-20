@@ -14,6 +14,8 @@ const config: Config = {
 
   customFields: {
     geminiApiKey: process.env.GEMINI_API_KEY,
+    groqApiKey: process.env.GROQ_API_KEY,
+    groqModel: process.env.GROQ_MODEL || 'qwen/qwen3.8-27b',
     qdrantUrl: process.env.QDRANT_URL,
     qdrantApiKey: process.env.QDRANT_API_KEY,
     neonConnectionString: process.env.DATABASE_URL,

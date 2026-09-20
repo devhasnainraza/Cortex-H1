@@ -27,7 +27,7 @@ const ApiKeyModal = ({ isOpen, onSubmit, onClose }: { isOpen: boolean, onSubmit:
           Unlock Translation
         </h3>
         <p className="text-sm text-center text-gray-500 dark:text-gray-400 mb-6 px-4">
-          Enter your free <b>Google Gemini API Key</b> to enable real-time AI translation for this book.
+          Enter your free <b>Groq API Key</b> to enable ultra-fast AI translation for this book.
         </p>
 
         <div className="space-y-4">
@@ -36,7 +36,7 @@ const ApiKeyModal = ({ isOpen, onSubmit, onClose }: { isOpen: boolean, onSubmit:
                   type="password" 
                   value={inputKey}
                   onChange={(e) => setInputKey(e.target.value)}
-                  placeholder="Paste API Key (starts with AIza...)"
+                  placeholder="Paste API Key (starts with gsk_...)"
                   className="w-full p-4 bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all font-mono text-sm shadow-inner group-hover:bg-white dark:group-hover:bg-gray-900"
                 />
             </div>
@@ -51,8 +51,8 @@ const ApiKeyModal = ({ isOpen, onSubmit, onClose }: { isOpen: boolean, onSubmit:
         </div>
 
         <div className="mt-6 pt-4 border-t border-gray-100 dark:border-gray-800 text-center">
-          <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-semibold text-blue-500 hover:text-blue-600 transition-colors">
-            Get a free key from Google AI Studio
+          <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs font-semibold text-blue-500 hover:text-blue-600 transition-colors">
+            Get a free key from Groq Console
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
           </a>
         </div>
@@ -150,6 +150,7 @@ export default function Translator() {
   };
 
   const handleKeySubmit = (key: string) => {
+    localStorage.setItem('GROQ_API_KEY', key);
     localStorage.setItem('GEMINI_API_KEY', key);
     setShowKeyModal(false);
     if (pendingLang) {
@@ -171,12 +172,7 @@ export default function Translator() {
     
     if (currentLang === lang) return;
 
-    let apiKey = localStorage.getItem('GEMINI_API_KEY');
-    if (!apiKey) {
-      setPendingLang(lang);
-      setShowKeyModal(true);
-      return;
-    }
+    let groqKey = localStorage.getItem('GROQ_API_KEY') || localStorage.getItem('GEMINI_API_KEY') || '';
 
     setLoading(true);
     const contentDiv = document.querySelector('.theme-doc-markdown');
@@ -199,28 +195,45 @@ export default function Translator() {
     }
 
     try {
-      const { GoogleGenerativeAI } = await import("@google/generative-ai");
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
       const langName = 'Urdu';
-      
-      const prompt = `You are a professional technical translator. 
-      Translate the following HTML content to ${langName}.
-      
-      CRITICAL RULES:
-      1. Return ONLY the inner HTML content. DO NOT wrap in <html>, <body>, or markdown code blocks.
-      2. DO NOT change any class names, ids, or structure.
-      3. DO NOT add dir="rtl" to the root div (it breaks the site layout).
-      4. DO NOT translate code blocks (<pre>, <code>).
-      
-      Content:
-      ${originalContent || contentDiv.innerHTML}`;
+      const prompt = `You are an expert robotics and artificial intelligence technical translator.
+Translate the following technical textbook content accurately into Urdu (${langName}).
 
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      let translatedText = response.text();
+CRITICAL RULES:
+1. Return ONLY the translated HTML content. DO NOT wrap in markdown code blocks like \`\`\`html.
+2. DO NOT alter CSS classes, HTML tags, links, or element hierarchy.
+3. Keep technical terms, ROS 2 commands, and mathematical variables in English/code format where appropriate.
+4. DO NOT translate code blocks (<pre>, <code>).
 
-      translatedText = translatedText.replace(/^```html/, '').replace(/```$/, '');
+Content:
+${originalContent || contentDiv.innerHTML}`;
+
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${groqKey}`
+        },
+        body: JSON.stringify({
+          model: 'qwen/qwen3.8-27b',
+          messages: [
+            { role: 'system', content: 'You are an accurate technical translator for robotics and AI documentation.' },
+            { role: 'user', content: prompt }
+          ],
+          temperature: 0.3,
+          max_tokens: 4096
+        })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData?.error?.message || `HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      let translatedText = data.choices?.[0]?.message?.content || '';
+
+      translatedText = translatedText.replace(/^```html\s*/i, '').replace(/```\s*$/i, '');
 
       if (translatedText) {
         contentDiv.innerHTML = translatedText;
@@ -229,19 +242,10 @@ export default function Translator() {
         showToast(`Translated to ${langName}`);
       }
     } catch (e: any) {
-      console.error(e);
-      let msg = "Unknown Error";
-      if (e.message?.includes('403') || e.message?.includes('API_KEY_INVALID')) {
-          msg = "Invalid API Key. Please check permissions.";
-          localStorage.removeItem('GEMINI_API_KEY'); 
-      } else if (e.message?.includes('429')) {
-          msg = "Quota Exceeded. Please wait a moment.";
-      } else if (e.message?.includes('404')) {
-          msg = "Model Error. Please contact support.";
-      }
-      alert(`Translation Error: ${msg}`);
+      console.error('Translation error:', e);
+      alert(`Translation Error: ${e.message || 'Check network or Groq key'}`);
     }
-    
+
     setLoading(false);
   };
 

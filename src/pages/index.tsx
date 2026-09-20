@@ -1,275 +1,797 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import Heading from '@theme/Heading';
 import clsx from 'clsx';
+import {
+  Brain,
+  Cpu,
+  Eye,
+  Compass,
+  Zap,
+  Terminal,
+  ArrowRight,
+  BookOpen,
+  Sparkles,
+  Layers,
+  ShieldCheck,
+  CheckCircle2,
+  Copy,
+  Check,
+  Code2,
+  ExternalLink,
+  ChevronRight,
+  Activity,
+  Bot,
+  Flame,
+} from 'lucide-react';
 
-// --- Animated Background ---
-const CyberBackground = () => (
-  <div className="absolute inset-0 overflow-hidden pointer-events-none">
-    <div className="absolute inset-0 bg-noise opacity-30 mix-blend-overlay"></div>
-    <div className="absolute inset-0 perspective-grid top-[20%]"></div>
-    <div className="absolute top-[-10%] left-[20%] w-[800px] h-[800px] bg-emerald-500/10 rounded-full blur-[120px] mix-blend-screen animate-blob"></div>
-    <div className="absolute bottom-[-10%] right-[10%] w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-[100px] mix-blend-screen animate-blob animation-delay-2000"></div>
+// --- Subtle Ambient Background ---
+const AmbientBackground = () => (
+  <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
+    {/* Soft subtle ambient blurs */}
+    <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-emerald-500/10 dark:bg-emerald-500/15 rounded-full blur-[140px]" />
+    <div className="absolute top-1/3 right-[-10%] w-[500px] h-[500px] bg-cyan-500/5 dark:bg-cyan-500/10 rounded-full blur-[120px]" />
+    {/* Micro-grid overlay */}
+    <div
+      className="absolute inset-0 opacity-[0.03] dark:opacity-[0.06]"
+      style={{
+        backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
+        backgroundSize: '24px 24px',
+      }}
+    />
   </div>
 );
 
-// --- Hero ---
-function Hero() {
+// --- 1. HERO SECTION ---
+const HeroSection = () => {
+  const [activeTab, setActiveTab] = useState(0);
+
+  const tabs = [
+    {
+      id: 'perception',
+      label: 'Perception',
+      icon: Eye,
+      badge: '30 FPS • RGB-D & LiDAR Fusion',
+      title: 'Multimodal Spatial Perception',
+      desc: 'Synchronized Intel RealSense depth sensors and solid-state LiDAR streams fused into 3D voxel grids for real-time obstacle avoidance and 6-DoF SLAM.',
+      highlights: [
+        'Point cloud voxel filtering (< 33ms latency)',
+        'Visual-Inertial Odometry & pose tracking',
+        'Dynamic semantic obstacle segmentation',
+      ],
+      link: '/docs/module-1-ros2/foundations-physical-ai',
+      file: 'spatial_perception.py',
+      code: [
+        { text: '# 30Hz Spatial Sensor Fusion Node', type: 'comment' },
+        { text: 'depth_map = realsense.get_depth_frame()', type: 'code' },
+        { text: 'point_cloud = lidar.get_point_cloud()', type: 'code' },
+        { text: 'voxel_grid = vslam.fuse(depth_map, point_cloud)', type: 'accent' },
+        { text: 'obstacles = detector.segment_objects(voxel_grid)', type: 'code' },
+      ],
+      status: '[INFO] 3D Voxel Grid initialized. Spatial streams synchronized.',
+    },
+    {
+      id: 'simulation',
+      label: 'Digital Twin',
+      icon: Layers,
+      badge: '4,096 Parallel GPU Envs',
+      title: 'High-Fidelity Isaac Sim Twin',
+      desc: 'GPU-parallelized physics simulation with domain randomization to train whole-body reinforcement learning policies before physical deployment.',
+      highlights: [
+        'Sub-millimeter collision and contact physics',
+        'Mass, friction, and motor latency randomization',
+        'Zero-shot Sim-to-Real policy transfer',
+      ],
+      link: '/docs/module-2-digital-twin/intro-digital-twin',
+      file: 'isaac_humanoid_env.py',
+      code: [
+        { text: '# NVIDIA Isaac Lab Parallel Simulation', type: 'comment' },
+        { text: 'sim_cfg = IsaacSimConfig(physics_dt=1/1000)', type: 'code' },
+        { text: 'env = IsaacLab.make("Cortex-H1-Bipedal", num_envs=4096)', type: 'accent' },
+        { text: 'policy = PPO.load("models/whole_body_v3.pt")', type: 'code' },
+        { text: 'actions = policy.forward(env.get_observations())', type: 'code' },
+      ],
+      status: '[SIM] 4096 environments active at 120,000 FPS aggregate.',
+    },
+    {
+      id: 'reasoning',
+      label: 'VLA Reasoning',
+      icon: Brain,
+      badge: 'OpenVLA-7B • Multimodal Transformer',
+      title: 'Vision-Language-Action Models',
+      desc: 'End-to-end multimodal foundation models that connect natural language intent and vision cameras directly to robot joint trajectory tokens.',
+      highlights: [
+        'Zero-shot natural language instruction following',
+        '7-DoF end-effector trajectory prediction',
+        'Edge inference quantized for NVIDIA Jetson Orin',
+      ],
+      link: '/docs/module-4-vla/intro-vla',
+      file: 'vla_policy_node.py',
+      code: [
+        { text: '# OpenVLA Multimodal End-to-End Inference', type: 'comment' },
+        { text: 'prompt = "Pick up the blue screwdriver from the bench"', type: 'code' },
+        { text: 'inputs = processor(images=camera_feed, text=prompt)', type: 'code' },
+        { text: 'tokens = vla_model.generate_actions(**inputs)', type: 'accent' },
+        { text: 'trajectory = tokens.to_joint_trajectory()', type: 'code' },
+      ],
+      status: '[VLA] Trajectory generated in 180ms. Confidence: 94.8%.',
+    },
+    {
+      id: 'control',
+      label: 'Real-Time Control',
+      icon: Zap,
+      badge: '1,000 Hz Deterministic Loop',
+      title: 'Low-Latency Actuator Control',
+      desc: 'Deterministic PREEMPT_RT Linux kernel running CycloneDDS over EtherCAT for microsecond-level joint torque execution.',
+      highlights: [
+        '1 kHz deterministic cycle with < 20µs jitter',
+        'Low-level motor current and position feedback',
+        'Hardware safety interlocks and e-stop watchdog',
+      ],
+      link: '/docs/module-1-ros2/foundations-physical-ai',
+      file: 'dds_actuator_loop.py',
+      code: [
+        { text: '# 1kHz Deterministic EtherCAT Joint Actuator', type: 'comment' },
+        { text: 'rt_loop = RealTimeLoop(frequency_hz=1000)', type: 'code' },
+        { text: 'while rt_loop.ok():', type: 'code' },
+        { text: '    torques = controller.compute_dynamics(q, dq)', type: 'accent' },
+        { text: '    dds_pub.send_actuator_torques(torques)', type: 'code' },
+      ],
+      status: '[REAL-TIME] 1000Hz loop active. EtherCAT Master connected.',
+    },
+  ];
+
+  const currentTab = tabs[activeTab];
+
   return (
-    <header className="relative min-h-[95vh] flex items-center justify-center overflow-hidden bg-white dark:bg-[#020617]">
-      <CyberBackground />
-      <div className="container relative z-10 flex flex-col items-center text-center px-4 pt-20">
-        <div className="group relative inline-flex items-center gap-2 px-6 py-2 rounded-full bg-white/40 dark:bg-emerald-900/10 border border-emerald-500/20 backdrop-blur-xl mb-12 shadow-2xl shadow-emerald-500/10 hover:scale-105 transition-transform cursor-default">
-          <span className="relative flex h-3 w-3">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-          </span>
-          <span className="text-sm font-bold tracking-widest text-emerald-800 dark:text-emerald-300 uppercase">
-            V1.0 Public Release
-          </span>
-          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-emerald-500/0 via-emerald-500/10 to-emerald-500/0 opacity-0 group-hover:opacity-100 transition-opacity animate-shimmer"></div>
+    <header className="relative pt-24 pb-20 md:pt-32 md:pb-28 overflow-hidden">
+      <AmbientBackground />
+
+      <div className="container relative z-10 max-w-6xl mx-auto px-4 sm:px-6">
+        {/* Top Badge */}
+        <div className="flex justify-center mb-8">
+          <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-slate-100/90 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 shadow-sm backdrop-blur-md">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span className="text-xs font-semibold tracking-wide text-slate-700 dark:text-slate-200 uppercase">
+              Cortex-H1 • Physical AI Curriculum
+            </span>
+            <span className="text-slate-300 dark:text-slate-600">|</span>
+            <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+              Open Access
+            </span>
+          </div>
         </div>
 
-        <Heading as="h1" className="text-7xl sm:text-8xl md:text-9xl lg:text-[10rem] font-black tracking-tighter text-slate-900 dark:text-white mb-6 leading-[0.9]">
-          Physical <br/>
-          <span className="text-shimmer">Intelligence</span>
-        </Heading>
-        
-        <p className="text-2xl md:text-3xl text-slate-600 dark:text-slate-400 max-w-4xl mx-auto mb-14 leading-relaxed font-medium tracking-tight">
-          The operating system for the next generation of humanoid robots.
-          <span className="block mt-4 text-lg md:text-xl text-slate-500 dark:text-slate-500 font-normal">
-            From <strong className="text-slate-900 dark:text-white">Real-Time Kernels</strong> to <strong className="text-slate-900 dark:text-white">Foundation Models</strong>.
-          </span>
-        </p>
+        {/* Hero Title & Subtitle */}
+        <div className="text-center max-w-4xl mx-auto mb-10">
+          <Heading
+            as="h1"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-slate-900 dark:text-white mb-6 leading-[1.08]"
+          >
+            Physical Intelligence for <br />
+            <span className="text-gradient-emerald">Humanoid Robotics</span>
+          </Heading>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full max-w-lg">
+          <p className="text-lg sm:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed font-normal">
+            The comprehensive, open-source textbook and laboratory guide. Master Real-Time ROS 2, Digital Twins in Isaac Sim, and Vision-Language-Action (VLA) Foundation Models.
+          </p>
+        </div>
+
+        {/* Hero CTAs */}
+        <div className="flex flex-wrap items-center justify-center gap-3.5 mb-16">
           <Link
-            className="group relative flex items-center justify-center gap-3 px-8 py-5 text-lg font-bold text-white rounded-2xl bg-slate-900 dark:bg-emerald-600 hover:bg-slate-800 dark:hover:bg-emerald-500 shadow-2xl shadow-emerald-500/20 transition-all overflow-hidden no-underline"
-            to="/docs/module-1-ros2/foundations-physical-ai">
-            <span className="relative z-10">Start Engineering</span>
-            <svg className="w-5 h-5 relative z-10 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+            className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 text-base font-semibold text-white rounded-xl bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-600/20 hover:shadow-lg hover:shadow-emerald-600/30 hover:-translate-y-0.5 transition-all no-underline"
+            to="/docs/module-1-ros2/foundations-physical-ai"
+          >
+            <span>Start Learning</span>
+            <ArrowRight className="w-4 h-4" />
           </Link>
+
+          <a
+            className="inline-flex items-center justify-center gap-2 px-6 py-3.5 text-base font-semibold text-slate-700 dark:text-slate-200 rounded-xl bg-white dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/80 shadow-sm hover:-translate-y-0.5 transition-all no-underline"
+            href="#curriculum"
+          >
+            <BookOpen className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span>Curriculum Overview</span>
+          </a>
+
           <Link
-            className="group flex items-center justify-center gap-3 px-8 py-5 text-lg font-bold text-slate-900 dark:text-white rounded-2xl bg-white/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 backdrop-blur-md hover:bg-white/80 dark:hover:bg-white/10 transition-all no-underline"
-            to="https://github.com/devhasnainraza/Physical-AI-Humanoid-Robotics-Book">
-            <span>Source Code</span>
+            className="inline-flex items-center justify-center gap-2 px-5 py-3.5 text-base font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors no-underline"
+            to="https://github.com/devhasnainraza/Cortex-H1"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Code2 className="w-4 h-4" />
+            <span>GitHub</span>
+            <ExternalLink className="w-3.5 h-3.5 opacity-60" />
           </Link>
+        </div>
+
+        {/* Hero Interactive Architecture Preview */}
+        <div className="max-w-5xl mx-auto rounded-2xl bg-white dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden">
+          {/* Sleek Segment Tab Bar */}
+          <div className="p-2 border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-950/60">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5" role="tablist">
+              {tabs.map((tab, idx) => {
+                const Icon = tab.icon;
+                const isSelected = activeTab === idx;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={isSelected}
+                    onClick={() => setActiveTab(idx)}
+                    className={clsx(
+                      'hero-tab-btn py-2.5 px-3.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 select-none',
+                      isSelected && 'hero-tab-active'
+                    )}
+                  >
+                    <Icon className={clsx('w-3.5 h-3.5', isSelected ? 'text-emerald-500' : 'text-slate-400')} />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Active Tab Content */}
+          <div className="p-6 sm:p-8">
+            <div className="grid lg:grid-cols-12 gap-8 items-center">
+              {/* Left Column: Explanations & Highlights */}
+              <div className="lg:col-span-6 space-y-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-mono font-medium">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>{currentTab.badge}</span>
+                </div>
+
+                <h3 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+                  {currentTab.title}
+                </h3>
+
+                <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                  {currentTab.desc}
+                </p>
+
+                <div className="space-y-2 pt-1">
+                  {currentTab.highlights.map((h, i) => (
+                    <div key={i} className="flex items-center gap-2.5 text-xs text-slate-700 dark:text-slate-300">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                      <span>{h}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="pt-2">
+                  <Link
+                    to={currentTab.link}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 no-underline group"
+                  >
+                    <span>Read {currentTab.label} Documentation</span>
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </div>
+              </div>
+
+              {/* Right Column: Sleek Developer Window */}
+              <div className="lg:col-span-6">
+                <div className="rounded-xl bg-[#090d16] border border-slate-800 shadow-2xl overflow-hidden font-mono text-xs">
+                  {/* Window Bar */}
+                  <div className="flex items-center justify-between px-4 py-2.5 bg-[#0f1422] border-b border-slate-800/80">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
+                      <span className="ml-2 text-[11px] text-slate-400 font-sans">
+                        {currentTab.file}
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold font-sans">
+                      Python 3.10
+                    </span>
+                  </div>
+
+                  {/* Code Area */}
+                  <div className="p-4 sm:p-5 overflow-x-auto text-[12px] leading-relaxed">
+                    <div className="space-y-1 whitespace-pre">
+                      {currentTab.code.map((line, lIdx) => (
+                        <div key={lIdx} className="flex">
+                          <span className="text-slate-600 select-none w-6 shrink-0 text-right pr-3 text-[11px]">
+                            {lIdx + 1}
+                          </span>
+                          <span
+                            className={clsx(
+                              line.type === 'comment' && 'text-slate-500 italic',
+                              line.type === 'accent' && 'text-emerald-400 font-semibold',
+                              line.type === 'code' && 'text-slate-200'
+                            )}
+                          >
+                            {line.text}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Terminal Status Output */}
+                  <div className="px-4 py-2 bg-black/40 border-t border-slate-800/60 text-[11px] text-emerald-400/90 flex items-center gap-2 overflow-x-auto">
+                    <Activity className="w-3 h-3 text-emerald-500 shrink-0" />
+                    <span className="truncate">{currentTab.status}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </header>
   );
-}
+};
 
-// --- NEW: The Pipeline Visualization ---
-const ThePipeline = () => (
-    <section className="py-24 bg-slate-50 dark:bg-[#050a14] border-y border-slate-200 dark:border-slate-800 overflow-hidden">
-        <div className="container px-4 text-center">
-            <p className="text-sm font-bold tracking-[0.2em] text-emerald-600 dark:text-emerald-400 uppercase mb-16">The Autonomy Pipeline</p>
-            
-            <div className="relative flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12 max-w-6xl mx-auto">
-                {/* Connecting Line (Desktop) */}
-                <div className="hidden md:block absolute top-1/2 left-0 w-full h-[2px] bg-slate-200 dark:bg-slate-800 -z-10">
-                    <div className="absolute inset-0 bg-emerald-500 w-1/3 animate-flow opacity-50"></div>
-                </div>
+// --- 2. METRICS & IMPACT STRIP ---
+const StatsStrip = () => {
+  const stats = [
+    { value: '4 Modules', label: 'Structured Core Curriculum', sub: 'ROS 2, Sim, AI Brain, VLA' },
+    { value: '100% Free', label: 'Open Access Textbook', sub: 'No paywalls, MIT licensed labs' },
+    { value: '1 kHz Loop', label: 'Deterministic Real-Time', sub: 'PREEMPT_RT & CycloneDDS' },
+    { value: 'Sim-to-Real', label: 'Zero-Shot Physical Transfer', sub: 'Isaac Sim to Unitree Bipeds' },
+  ];
 
-                {[
-                    { title: "Perception", icon: "👁️", desc: "RGB-D + LiDAR", color: "border-blue-500" },
-                    { title: "World Model", icon: "🗺️", desc: "VSLAM & Semantics", color: "border-purple-500" },
-                    { title: "Reasoning", icon: "🧠", desc: "VLA Transformer", color: "border-emerald-500" },
-                    { title: "Planning", icon: "🎯", desc: "Nav2 & MoveIt", color: "border-orange-500" },
-                    { title: "Control", icon: "⚡", desc: "DDS Real-Time", color: "border-red-500" },
-                ].map((step, i) => (
-                    <div key={i} className="relative group">
-                        <div className={`w-24 h-24 rounded-2xl bg-white dark:bg-[#0b101e] border-2 ${step.color} shadow-xl flex items-center justify-center text-4xl mb-6 relative z-10 transition-transform group-hover:scale-110`}>
-                            {step.icon}
-                            <div className="absolute -inset-2 rounded-3xl bg-inherit -z-10 opacity-0 group-hover:opacity-20 transition-opacity blur-lg ring-pulse"></div>
-                        </div>
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white">{step.title}</h3>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{step.desc}</p>
-                    </div>
-                ))}
+  return (
+    <section className="py-10 border-y border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
+      <div className="container max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+          {stats.map((item, idx) => (
+            <div key={idx} className="text-center sm:text-left">
+              <div className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight mb-1">
+                {item.value}
+              </div>
+              <div className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 mb-0.5">
+                {item.label}
+              </div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">
+                {item.sub}
+              </div>
             </div>
+          ))}
         </div>
+      </div>
     </section>
-);
+  );
+};
 
-// --- NEW: Stats Strip ---
-const StatsStrip = () => (
-    <div className="grid grid-cols-2 md:grid-cols-4 border-b border-slate-200 dark:border-slate-800">
-        {[
-            { label: "Engineering Modules", val: "7+" },
-            { label: "Hardware Platforms", val: "3" },
-            { label: "Community Builders", val: "1.2k" },
-            { label: "Open Source", val: "100%" },
-        ].map((stat, i) => (
-            <div key={i} className="py-12 text-center bg-white dark:bg-[#020617] border-r border-slate-200 dark:border-slate-800 last:border-r-0 hover:bg-slate-50 dark:hover:bg-[#0b101e] transition-colors">
-                <div className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white mb-2">{stat.val}</div>
-                <div className="text-xs font-bold tracking-widest text-slate-500 uppercase">{stat.label}</div>
-            </div>
-        ))}
-    </div>
-);
+// --- 3. THE AUTONOMY PIPELINE ---
+const AutonomyPipeline = () => {
+  const steps = [
+    {
+      num: '01',
+      title: 'Perception',
+      desc: 'RGB-D + LiDAR spatial fusion & real-time depth mapping',
+      icon: Eye,
+    },
+    {
+      num: '02',
+      title: 'World Model',
+      desc: 'Visual SLAM, OctoMap 3D voxel grids & semantic scene graphs',
+      icon: Compass,
+    },
+    {
+      num: '03',
+      title: 'Embodied AI',
+      desc: 'Vision-Language-Action (VLA) models for task decomposition',
+      icon: Brain,
+    },
+    {
+      num: '04',
+      title: 'Motion Planning',
+      desc: 'Nav2 bipedal navigation & MoveIt 2 obstacle-aware trajectories',
+      icon: Layers,
+    },
+    {
+      num: '05',
+      title: 'Control & Actuation',
+      desc: '1 kHz low-level joint torque control via DDS & EtherCAT',
+      icon: Zap,
+    },
+  ];
 
-// --- Bento Grid ---
-const MasterCurriculum = () => (
-    <section className="py-32 bg-white dark:bg-[#020617] relative">
-        <div className="container px-4">
-            <div className="text-center mb-20">
-                <h2 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white mb-6">Full-Stack Robotics</h2>
-                <p className="text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-                    Master the architecture.
-                </p>
-            </div>
+  return (
+    <section className="py-20 md:py-24 bg-white dark:bg-[#020617]">
+      <div className="container max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="text-center max-w-2xl mx-auto mb-14">
+          <div className="text-xs font-mono font-bold tracking-widest text-emerald-600 dark:text-emerald-400 uppercase mb-2">
+            The Autonomous Architecture
+          </div>
+          <Heading as="h2" className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+            How Physical AI Operates
+          </Heading>
+          <p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base mt-3 leading-relaxed">
+            From raw sensory photons to physical actuator torques. The textbook covers every link in the humanoid robotics stack.
+          </p>
+        </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-6 auto-rows-[minmax(180px,auto)] max-w-7xl mx-auto">
-                {/* 1. The Brain */}
-                <div className="md:col-span-6 lg:col-span-8 md:row-span-2 card-holographic rounded-[2.5rem] p-10 flex flex-col justify-between group overflow-hidden">
-                    <div className="relative z-10 max-w-xl">
-                        <div className="w-20 h-20 bg-gradient-to-br from-emerald-400 to-cyan-500 rounded-3xl flex items-center justify-center text-4xl mb-8 shadow-lg shadow-emerald-500/30 text-white">🧠</div>
-                        <h3 className="text-4xl font-bold mb-4 text-slate-900 dark:text-white">The AI Brain</h3>
-                        <p className="text-xl text-slate-700 dark:text-slate-300 leading-relaxed mb-8">
-                            Implement <strong className="text-emerald-600 dark:text-emerald-400">Visual SLAM</strong>, <strong className="text-emerald-600 dark:text-emerald-400">Nav2</strong>, and <strong className="text-emerald-600 dark:text-emerald-400">Foundation Models</strong>. 
-                            Process RGB-D data on the Edge.
-                        </p>
-                        <div className="flex gap-3 flex-wrap">
-                            {['RT-2', 'OpenVLA', 'GPT-4o', 'YOLOv8'].map(tag => (
-                                <span key={tag} className="px-3 py-1 rounded-md bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 text-sm font-mono font-bold text-slate-600 dark:text-slate-300">{tag}</span>
-                            ))}
-                        </div>
+        {/* 5-Step Pipeline Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {steps.map((step, idx) => {
+            const Icon = step.icon;
+            return (
+              <div
+                key={idx}
+                className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 hover:border-emerald-500/50 dark:hover:border-emerald-500/50 hover:shadow-md transition-all group flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-xs font-mono font-bold text-slate-400 dark:text-slate-500">
+                      {step.num}
+                    </span>
+                    <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 flex items-center justify-center border border-slate-200/60 dark:border-slate-700 shadow-sm group-hover:scale-110 transition-transform">
+                      <Icon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     </div>
-                    <div className="absolute -right-20 -bottom-20 w-[400px] h-[400px] bg-gradient-to-tl from-emerald-500/20 to-transparent rounded-full blur-[80px] group-hover:scale-125 transition-transform duration-1000"></div>
+                  </div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white mb-2">
+                    {step.title}
+                  </h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-0">
+                    {step.desc}
+                  </p>
                 </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+};
 
-                {/* 2. Simulation */}
-                <div className="md:col-span-3 lg:col-span-4 md:row-span-2 card-holographic rounded-[2.5rem] p-10 group relative overflow-hidden">
-                    <div className="absolute inset-0 bg-[url('https://upload.wikimedia.org/wikipedia/commons/e/e5/NASA_Mars_Rover.jpg')] bg-cover bg-center opacity-5 group-hover:opacity-10 transition-opacity grayscale mix-blend-overlay"></div>
-                    <div className="relative z-10 h-full flex flex-col">
-                        <div className="text-5xl mb-auto">🏗️</div>
-                        <div>
-                            <h3 className="text-2xl font-bold mb-2 text-slate-900 dark:text-white">Digital Twin</h3>
-                            <p className="text-slate-600 dark:text-slate-400 mb-6">Zero-cost training in NVIDIA Isaac Sim.</p>
-                            <Link className="no-underline"
-            to="/docs/module-2-digital-twin/intro-digital-twin">
-                                      <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-2">Learn Simulation <span className="group-hover:translate-x-1 transition-transform">→</span></span>
+// --- 4. MASTER CURRICULUM BENTO GRID ---
+const MasterCurriculum = () => {
+  const modules = [
+    {
+      num: 'MODULE 01',
+      title: 'The Robotic Nervous System',
+      badge: 'Core Middleware',
+      desc: 'Build the digital backbone with ROS 2 Humble. Master computational graphs, nodes, DDS communication QoS, and URDF kinematic modeling.',
+      tags: ['ROS 2 Humble', 'DDS QoS', 'URDF', 'C++ / Python'],
+      link: '/docs/module-1-ros2/foundations-physical-ai',
+      icon: Cpu,
+    },
+    {
+      num: 'MODULE 02',
+      title: 'The Digital Twin',
+      badge: 'Simulation & Physics',
+      desc: 'Create high-fidelity physics environments in NVIDIA Isaac Sim and Gazebo Harmonic. Generate synthetic training data and calibrate domain randomization.',
+      tags: ['Isaac Sim', 'Gazebo', 'MuJoCo', 'Synthetic Data'],
+      link: '/docs/module-2-digital-twin/intro-digital-twin',
+      icon: Layers,
+    },
+    {
+      num: 'MODULE 03',
+      title: 'The AI-Robot Brain',
+      badge: 'Spatial AI & Locomotion',
+      desc: 'Implement Nav2 path planners, visual SLAM feature tracking, and Model Predictive Control (MPC) for stable bipedal and quadrupedal locomotion.',
+      tags: ['Nav2 Planners', 'Visual SLAM', 'MPC Locomotion', 'Jetson Orin'],
+      link: '/docs/module-3-ai-brain/intro-rl',
+      icon: Brain,
+    },
+    {
+      num: 'MODULE 04',
+      title: 'Vision-Language-Action (VLA)',
+      badge: 'Embodied Foundation Models',
+      desc: 'Connect multimodal LLMs directly to robot physical manipulation. Train and evaluate OpenVLA and RT-2 for zero-shot natural language instruction following.',
+      tags: ['OpenVLA-7B', 'RT-2', 'Multimodal LLMs', 'Manipulation'],
+      link: '/docs/module-4-vla/intro-vla',
+      icon: Sparkles,
+    },
+  ];
 
+  return (
+    <section id="curriculum" className="py-20 md:py-24 bg-slate-50/60 dark:bg-slate-900/40 border-t border-slate-200/80 dark:border-slate-800">
+      <div className="container max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-14 gap-4">
+          <div>
+            <div className="text-xs font-mono font-bold tracking-widest text-emerald-600 dark:text-emerald-400 uppercase mb-2">
+              Curriculum Roadmap
+            </div>
+            <Heading as="h2" className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight mb-2">
+              The 4 Core Engineering Modules
+            </Heading>
+            <p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base max-w-xl">
+              A structured progression taking you from hardware interfacing to state-of-the-art multimodal robotics.
+            </p>
+          </div>
+          <Link
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 no-underline"
+            to="/docs/textbook/introduction"
+          >
+            <span>Read Textbook Overview</span>
+            <ChevronRight className="w-4 h-4" />
           </Link>
-                        </div>
-                    </div>
-                </div>
-
-                {/* 3. Hardware */}
-                <div className="md:col-span-3 lg:col-span-5 card-holographic rounded-[2.5rem] p-8 flex flex-col justify-end bg-slate-900 group overflow-hidden border-none relative">
-                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-30"></div>
-                    <div className="relative z-10">
-                        <span className="font-mono text-emerald-400 text-xs tracking-widest mb-2 block">HARDWARE_INTERFACE</span>
-                        <h3 className="text-2xl font-bold text-white mb-1">Unitree Go2</h3>
-                        <p className="text-slate-400 text-sm">Low-level motor control via DDS.</p>
-                    </div>
-                </div>
-
-                {/* 4. Locomotion */}
-                <div className="md:col-span-3 lg:col-span-7 card-holographic rounded-[2.5rem] p-8 flex items-center gap-6 group">
-                     <div className="w-16 h-16 rounded-full bg-teal-50 dark:bg-teal-500/20 flex items-center justify-center text-3xl">🏃</div>
-                     <div>
-                        <h3 className="text-2xl font-bold mb-1 text-slate-900 dark:text-white">Locomotion</h3>
-                        <p className="text-slate-600 dark:text-slate-400">Model Predictive Control (MPC) & WBC.</p>
-                     </div>
-                </div>
-            </div>
         </div>
-    </section>
-);
 
-// --- Technical Deep Dive ---
-const TechnicalDeepDive = () => (
-    <section className="py-32 bg-slate-900 text-white relative overflow-hidden">
-         <div className="absolute inset-0 bg-[url('/img/grid-pattern.svg')] opacity-5"></div>
-         <div className="container relative z-10 px-4 grid lg:grid-cols-2 gap-20 items-center">
-             <div>
-                 <div className="inline-block px-3 py-1 rounded bg-emerald-500/10 text-emerald-400 font-mono text-xs mb-6">DEPLOYMENT_TARGET</div>
-                 <h2 className="text-4xl md:text-6xl font-black mb-10">Hardware Stack</h2>
-                 <div className="space-y-8">
-                     {[{ label: "Compute", val: "NVIDIA Jetson AGX Orin 64GB", icon: "💻" }, { label: "Vision", val: "Intel RealSense D435i + LiDAR", icon: "👁️" }, { label: "Actuation", val: "Unitree High-Torque Motors", icon: "⚙️" }, { label: "Kernel", val: "Ubuntu 22.04 Real-Time (PREEMPT_RT)", icon: "🐧" }].map((spec, i) => (
-                         <div key={i} className="flex items-center gap-6 group">
-                             <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center text-2xl group-hover:bg-emerald-600 transition-colors">{spec.icon}</div>
-                             <div>
-                                 <div className="text-slate-400 text-sm font-bold tracking-wider uppercase">{spec.label}</div>
-                                 <div className="text-xl md:text-2xl font-bold font-mono text-white">{spec.val}</div>
-                             </div>
-                         </div>
-                     ))}
-                 </div>
-             </div>
-             <div className="relative perspective-1000">
-                 <div className="absolute inset-0 bg-emerald-500/20 blur-[80px] rounded-full"></div>
-                 <div className="relative bg-[#0d1117] rounded-xl border border-slate-700 shadow-2xl p-6 font-mono text-sm leading-relaxed overflow-hidden transform rotate-y-[-5deg] rotate-x-[5deg] hover:rotate-0 transition-transform duration-500">
-                     <div className="flex gap-2 mb-4 border-b border-slate-800 pb-4">
-                         <div className="w-3 h-3 rounded-full bg-red-500"></div><div className="w-3 h-3 rounded-full bg-yellow-500"></div><div className="w-3 h-3 rounded-full bg-green-500"></div>
-                     </div>
-                     <div className="space-y-2">
-                         <p className="text-emerald-400">$ ros2 launch cortex_bringup robot.launch.py</p>
-                         <p className="text-slate-400">[INFO] [launch]: All log files can be found below /home/cortex/.ros/log</p>
-                         <p className="text-slate-300">[INFO] [hardware_interface]: <span className="text-blue-400">EtherCAT Master connected.</span></p>
-                         <p className="text-slate-300">[INFO] [controller_manager]: Loading controller 'joint_trajectory_controller'</p>
-                         <p className="text-slate-300">[INFO] [moveit_move_group]: <span className="text-green-400">Ready to take commands.</span></p>
-                         <p className="text-emerald-400 mt-4">$ python3 run_inference.py --model rt-2-x</p>
-                         <p className="text-slate-300">Loading weights... [100%]</p>
-                         <p className="text-yellow-400">>> "Pick up the blue screwdriver"</p>
-                         <p className="text-slate-300">Generating trajectory... <span className="animate-pulse">_</span></p>
-                     </div>
-                 </div>
-             </div>
-         </div>
-    </section>
-);
+        {/* 2x2 Bento Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {modules.map((m, idx) => {
+            const Icon = m.icon;
+            return (
+              <div
+                key={idx}
+                className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 hover:border-emerald-500/40 dark:hover:border-emerald-500/40 hover:shadow-lg transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-5">
+                    <span className="text-xs font-mono font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-md">
+                      {m.num}
+                    </span>
+                    <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                      {m.badge}
+                    </span>
+                  </div>
 
-// --- Ecosystem Strip ---
-const Ecosystem = () => (
-    <div className="py-12 bg-white dark:bg-[#020617] border-t border-slate-200 dark:border-slate-800 overflow-hidden">
-        <div className="container px-4 text-center">
-            <p className="text-sm font-bold tracking-widest text-slate-400 uppercase mb-8 opacity-60">Powering the Next Generation of Robotics</p>
-            <div className="flex flex-wrap justify-center items-center gap-12 md:gap-20 opacity-50 grayscale hover:grayscale-0 transition-all duration-700">
-                <h3 className="text-2xl font-black text-slate-900 dark:text-white">ROS 2</h3>
-                <h3 className="text-2xl font-black text-slate-900 dark:text-white">NVIDIA</h3>
-                <h3 className="text-2xl font-black text-slate-900 dark:text-white">OpenCV</h3>
-                <h3 className="text-2xl font-black text-slate-900 dark:text-white">PyTorch</h3>
-                <h3 className="text-2xl font-black text-slate-900 dark:text-white">MoveIt</h3>
-            </div>
+                  <div className="flex items-start gap-4 mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 border border-slate-200/60 dark:border-slate-700">
+                      <Icon className="w-5 h-5 text-slate-800 dark:text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">
+                        {m.title}
+                      </h3>
+                      <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+                        {m.desc}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Tech Tags */}
+                  <div className="flex flex-wrap gap-1.5 mb-6">
+                    {m.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200/50 dark:border-slate-700/50"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <Link
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 no-underline group"
+                  to={m.link}
+                >
+                  <span>Explore Module</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            );
+          })}
         </div>
-    </div>
-);
+      </div>
+    </section>
+  );
+};
 
+// --- 5. HARDWARE & CODE SHOWCASE ---
+const HardwareStack = () => {
+  const [copied, setCopied] = useState(false);
+
+  const sampleCode = `# ros2_arm_controller.py
+import rclpy
+from rclpy.node import Node
+from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
+
+class HumanoidArmController(Node):
+    def __init__(self):
+        super().__init__('humanoid_arm_controller')
+        self.pub = self.create_publisher(
+            JointTrajectory, '/cortex/arm_controller/joint_trajectory', 10
+        )
+        self.get_logger().info('Cortex-H1 Real-Time Node Initialized.')
+
+    def execute_pose(self, joint_angles):
+        msg = JointTrajectory()
+        msg.joint_names = ['shoulder_pitch', 'shoulder_roll', 'elbow_yaw', 'wrist_pitch']
+        point = JointTrajectoryPoint()
+        point.positions = joint_angles
+        point.time_from_start.sec = 1
+        msg.points.append(point)
+        self.pub.publish(msg)`;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(sampleCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const specs = [
+    { label: 'Compute Engine', val: 'NVIDIA Jetson AGX Orin (64GB, 275 TOPS)', icon: Cpu },
+    { label: 'Spatial Vision', val: 'Intel RealSense D435i + Solid-State LiDAR', icon: Eye },
+    { label: 'Actuators', val: 'High-Torque Quasi-Direct Drive (QDD) Motors', icon: Zap },
+    { label: 'Real-Time Kernel', val: 'Ubuntu 22.04 LTS (PREEMPT_RT Low-Latency)', icon: Terminal },
+  ];
+
+  return (
+    <section className="py-20 md:py-24 bg-white dark:bg-[#020617] border-t border-slate-200/80 dark:border-slate-800">
+      <div className="container max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="grid lg:grid-cols-12 gap-10 items-center">
+          {/* Left: Hardware Specs */}
+          <div className="lg:col-span-6 space-y-6">
+            <div>
+              <div className="text-xs font-mono font-bold tracking-widest text-emerald-600 dark:text-emerald-400 uppercase mb-2">
+                Physical Specifications
+              </div>
+              <Heading as="h2" className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight mb-3">
+                Production Hardware Stack
+              </Heading>
+              <p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed">
+                Tested against real-world humanoid prototypes and commercial quadruped platforms (such as the Unitree Go2 & H1).
+              </p>
+            </div>
+
+            <div className="space-y-3.5">
+              {specs.map((item, idx) => {
+                const Icon = item.icon;
+                return (
+                  <div
+                    key={idx}
+                    className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/70 border border-slate-200/70 dark:border-slate-800 flex items-center gap-3.5"
+                  >
+                    <div className="w-9 h-9 rounded-lg bg-white dark:bg-slate-800 flex items-center justify-center border border-slate-200/60 dark:border-slate-700 shrink-0">
+                      <Icon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    <div>
+                      <div className="text-[11px] font-mono uppercase text-slate-400 dark:text-slate-500 font-semibold">
+                        {item.label}
+                      </div>
+                      <div className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
+                        {item.val}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Right: Code Sample */}
+          <div className="lg:col-span-6">
+            <div className="rounded-2xl bg-slate-950 border border-slate-800 shadow-xl overflow-hidden font-mono text-xs">
+              <div className="flex items-center justify-between px-4 py-3 bg-slate-900/90 border-b border-slate-800">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
+                  <span className="ml-2 text-slate-400 text-xs font-sans">ros2_arm_controller.py</span>
+                </div>
+                <button
+                  onClick={handleCopy}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors text-[11px]"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="w-3 h-3 text-emerald-400" />
+                      <span>Copied</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3 h-3" />
+                      <span>Copy</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              <div className="p-4 sm:p-5 overflow-x-auto text-slate-300 leading-relaxed">
+                <pre className="m-0 bg-transparent text-slate-300 p-0 font-mono text-xs">
+                  <code>{sampleCode}</code>
+                </pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// --- 6. ECOSYSTEM LOGOS ---
+const Ecosystem = () => {
+  const tools = [
+    { name: 'ROS 2 Humble', role: 'DDS Middleware' },
+    { name: 'NVIDIA Isaac Sim', role: 'GPU Physics Twin' },
+    { name: 'PyTorch 2.x', role: 'Deep Learning' },
+    { name: 'MoveIt 2', role: 'Kinematics & Motion' },
+    { name: 'Nav2', role: 'Autonomous Navigation' },
+    { name: 'MuJoCo', role: 'Fast Contact Physics' },
+  ];
+
+  return (
+    <section className="py-14 border-t border-slate-200/80 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/20">
+      <div className="container max-w-6xl mx-auto px-4 sm:px-6 text-center">
+        <p className="text-xs font-mono font-bold tracking-widest text-slate-500 dark:text-slate-400 uppercase mb-8">
+          Built on Industry-Standard Robotics & AI Frameworks
+        </p>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+          {tools.map((t, idx) => (
+            <div
+              key={idx}
+              className="p-3.5 rounded-xl bg-white dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800 shadow-sm"
+            >
+              <div className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 mb-0.5">
+                {t.name}
+              </div>
+              <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                {t.role}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// --- 7. ACTION-DRIVEN FOOTER CTA ---
+const FooterCta = () => {
+  return (
+    <section className="py-20 md:py-24 bg-white dark:bg-[#020617] border-t border-slate-200/80 dark:border-slate-800 text-center relative overflow-hidden">
+      <div className="container max-w-3xl mx-auto px-4 sm:px-6 relative z-10">
+        <Heading
+          as="h2"
+          className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-5 tracking-tight"
+        >
+          Build the Future of <br />
+          <span className="text-gradient-emerald">Physical Intelligence</span>
+        </Heading>
+
+        <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 max-w-lg mx-auto mb-8 leading-relaxed">
+          Start with Chapter 1 Foundations, or jump straight into the ROS 2 Humble engineering modules and executable labs.
+        </p>
+
+        <div className="flex flex-wrap items-center justify-center gap-3.5">
+          <Link
+            className="inline-flex items-center justify-center gap-2 px-7 py-3.5 text-base font-semibold text-white rounded-xl bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-600/20 hover:shadow-lg hover:shadow-emerald-600/30 hover:-translate-y-0.5 transition-all no-underline"
+            to="/docs/module-1-ros2/foundations-physical-ai"
+          >
+            <span>Launch Module 1 Labs</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+          <Link
+            className="inline-flex items-center justify-center gap-2 px-6 py-3.5 text-base font-semibold text-slate-700 dark:text-slate-200 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-all no-underline"
+            to="/docs/textbook/introduction"
+          >
+            <BookOpen className="w-4 h-4" />
+            <span>Read Full Book</span>
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+// --- MAIN PAGE EXPORT ---
 export default function Home(): React.JSX.Element {
-  const {siteConfig} = useDocusaurusContext();
+  const { siteConfig } = useDocusaurusContext();
+
   return (
     <Layout
       title={`${siteConfig.title} | The Physical AI Handbook`}
-      description="Build autonomous humanoid robots with ROS 2 and VLA Models.">
-      <main className="bg-white dark:bg-[#020617]">
-        <Hero />
+      description="Build autonomous humanoid robots with ROS 2, NVIDIA Isaac Sim, and VLA Models."
+    >
+      <main className="bg-white dark:bg-[#020617] text-slate-900 dark:text-slate-100 min-h-screen">
+        <HeroSection />
         <StatsStrip />
-        <ThePipeline />
+        <AutonomyPipeline />
         <MasterCurriculum />
-        <TechnicalDeepDive />
+        <HardwareStack />
         <Ecosystem />
-        
-        {/* Footer CTA */}
-        <section className="py-40 bg-white dark:bg-[#020617] relative overflow-hidden text-center">
-            <div className="absolute inset-0 bg-grid-emerald opacity-10 pointer-events-none"></div>
-            <div className="container relative z-10">
-                <h2 className="text-6xl md:text-8xl font-black text-slate-900 dark:text-white mb-10 tracking-tighter">
-                    Build the <br/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-cyan-500">Future.</span>
-                </h2>
-                <Link
-                    className="inline-flex items-center justify-center px-12 py-6 text-2xl font-bold text-white rounded-full bg-slate-900 dark:bg-emerald-600 hover:scale-105 transition-transform shadow-2xl shadow-emerald-500/20 no-underline"
-                    to="/docs/module-1-ros2/foundations-physical-ai">
-                    Start Your Journey
-                </Link>
-            </div>
-        </section>
+        <FooterCta />
       </main>
     </Layout>
   );
