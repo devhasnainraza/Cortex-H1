@@ -1,1 +1,0 @@
-"use strict";(globalThis.webpackChunkcortex_h1=globalThis.webpackChunkcortex_h1||[]).push([[6366],{6366:(e,c,h)=>{h.d(c,{createArchitectureServices:()=>r.S});var r=h(8980);h(7960)}}]);
